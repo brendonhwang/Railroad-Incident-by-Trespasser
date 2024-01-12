@@ -1,5 +1,5 @@
 ## Railroad Incidents Caused by Trespassers
-*Data is from The National Response Center from 2017 to 2021*
+<span style="font-family: Arial; font-size: 8px;">Data is from The National Response Center from 2017 to 2021</span>
 
 ![Screenshot 2024-01-11 184651](https://github.com/brendonhwang/railroad_incident/assets/155376651/8c384e62-d2af-4637-afd5-b9178d462428)
 
@@ -9,19 +9,19 @@
 
 The National Response Center (NRC) is an emergency call center that fields Initial reports for railroad and pollution incidents.   Their online raw data may contain incomplete, inconsistent, and duplicated data due to premature investigation.  I imagined myself as a data analyst hired by the NRC to clean the dirty data and transform them into meaningful information for the stakeholders.
 
-#### PROCESS & RESULT:
+#### Process & Output:
 
 Before beginning the project, I researched the NRC and asked many questions. About the presence of dirty data in its data sets and how to identify and clean it? I then created a QA validation list to identify dirty data by reviewing the NRC data dictionary and running QA scripts. The results of this process are included in my QA report. Next, I transformed the raw data into meaningful information and analyzed patterns using the clean data. Finally, I shared my findings and created a visualized dashboard to display various types of data.
 
 
 #### Data Quality:
 
-*Q: How can data errors be identified, what is the process for cleaning dirty data, and how many records were affected by the data errors?*
+<span style="font-family: Arial; font-size: 12px;font-color: Navy">Q: How can data errors be identified, what is the process for cleaning dirty data, and how many records were affected by the data errors?</span>
 
 To analyze the NRC's data, I first created an error validation list (dirty data) based on the NRC's data dictionary. [CLICK HERE](https://drive.google.com/file/d/1F-RKH58q6bnSUqEnUheCC2nu-hEOZaDu/view?usp=share_link)  
 I then developed a QA script with 17 validation queries using MySQL. When running the script the results showed that there were +500 records with dirty data out of +15,000 total records. I then compiled a data quality report by exporting the results [CLICK HERE](https://docs.google.com/spreadsheets/d/1gpAq7NvOR4bu8Pl4Zip4Wf88_ufVIE-Q/edit?usp=share_link&ouid=114709162336788348185&rtpof=true&sd=true)  
 
-<span style="font-family: Arial; font-size: 12px; ;">The file has been converted from Microsoft Excel to a Google Doc.  The original file will be provided upon request.</span>
+<span style="font-family: Arial; font-size: 12px;">The file has been converted from Microsoft Excel to a Google Doc.  The original file will be provided upon request.</span>
 
 *Q: What are some ways to improve the quality control (QC) process?*
 
