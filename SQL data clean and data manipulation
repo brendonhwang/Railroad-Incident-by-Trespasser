@@ -1,0 +1,129 @@
+/* this query is design to retrieve incident cause by trespasser  */
+SELECT 
+/* 
+General Information - Cause (INCIDENT_COMMONS)
+ */
+ic.SEQNOS NRC_Number,                                                    -- Unique Identifier assigned to each report
+ic.INCIDENT_CAUSE,                                                       -- Cause of the Incident 
+/* 
+General Information - incident date (INCIDENT_COMMONS)
+*/
+ic.INCIDENT_DATE_TIME,                                                   -- Date and Time incident occurred, was discovered or planned
+CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'YYYY') INCIDENT_YEAR,       -- Change incident date field to YEAR field
+CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'MM/DD/YYYY') INCIDENT_DATE, -- Change incident date field to Incident Date field
+Case 
+when CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'MM') in ('03','04','05') then 'Spring'
+when CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'MM') in ('06','07','08') then 'Summer'
+when CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'MM') in ('09','10','11') then 'Fall'
+when CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'MM') in ('12','01','02') then 'Winter' else null end 
+INCIDENT_SEASON,                                                         -- Change incident date field to Season field
+CAST(ic.INCIDENT_DATE_TIME AS STRING FORMAT 'MM') INCIDENT_MONTH,        -- Change incident date field to MONTH field
+Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'PM') INCIDENT_AMPM,         -- Change date field to AM/PM field
+Case 
+when Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'PM') = 'AM' and Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'HH') in ('05','06','07','08','09','10','11','12')
+then 'Morning'
+when Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'PM') = 'PM' and Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'HH') in ('01','02','03','04')
+then 'Afternoon'
+when Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'PM') = 'PM' and Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'HH') in ('05','06','07','08')
+then 'Evening'
+when Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'PM') = 'PM' and Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'HH') in ('09','10','11','12')
+then 'Night'
+when Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'PM') = 'AM' and Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'HH') in ('01','02','03','04')
+then 'Night'else null end 
+INCIDENT_DAY_RANGE,                                                      -- Change date field to day field (Morning, Afternoon, Evening, Night)
+Cast(ic.INCIDENT_DATE_TIME as STRING FORMAT 'HH') INCIDENT_HOUR,         -- Change date field to Hour field
+ic.POTENTIAL_FLAG,                                                       -- Indicates if the Report is a Potential Release of Material
+/* 
+Serious Incident Indicator, injury, fatality and damage (INCIDENT_DETAILS)
+*/
+Case when id.NUMBER_FATALITIES > 0 then 'Y' else null end INJURY_IND,    -- Change (due to dirty data) Indicates if any injuries occurred as a result of the incident
+id.NUMBER_INJURED,                                                       -- Number of people injured
+Case when id.NUMBER_FATALITIES > 0 then 'Y' else null end FATALITY_IND,  -- Change (due to dirty data) Indicates if any fatalities occurred as a result of the incident
+id.NUMBER_FATALITIES,                                                    -- Number of fatalities that occurred
+Case 
+when id.NUMBER_FATALITIES > 0 then 'Y' 
+when id.NUMBER_INJURED > 0 then 'Y' else null end 
+SERIOUS_IND,                                                             -- Change NUMBER_FATALITIES and NUMBER_INJURED to determine whether incident is serious
+id.NUMBER_HOSPITALIZED,                                                  -- Number injured which required removal to an emergency facility    
+id.EMPLOYEE_INJURIES,                                                    -- Number of employees injured 
+id.EMPL_FATALITY,                                                        -- Number of employee fatalities
+id.PASSENGER_INJURIES,                                                   -- Number of passengers injured
+id.PASS_FATALITY,                                                        -- Number of passenger fatalities
+id.OCCUPANT_FATALITY,                                                    -- Number of vehicle occupant fatalities (used for railroad incidents)
+id.ANY_DAMAGES DAMAGES_IND,                                              -- Indicates if there was any property damage as a result of the incident
+id.DAMAGE_AMOUNT,                                                        -- Monetary estimation of total property damage
+id.FIRE_INVOLVED,                                                        -- Indicates if any fire was involved with the incident
+/* 
+INCIDENT_DETAILS: detail Information - injury, fatality 
+*/
+id.MEDIUM_DESC,                                                           -- Medium affected as a result of the incident
+id.ADDITIONAL_MEDIUM_INFO,                                                -- More detailed description of medium affected
+id.WEATHER_CONDITIONS,                                                    -- Weather conditions at time of incident
+Case when id.MEDIA_INTEREST in ('NO', 'NON') then 'NONE'                  
+ELSE id.MEDIA_INTEREST end MEDIA_INTEREST,                                -- Change due to dirty data
+/* 
+Incident location 
+*/
+LOCATION_STATE,                                                           -- State where incident occurred
+case when LOCATION_STATE in ('CT', 'DC', 'DE', 'FL', 'GA', 'MA', 'MD', 'ME', 'NC', 'NH', 'NJ', 'NY', 'PA', 'RI', 'SC', 'VA', 'VT', 'WV') then "East Coast"
+when LOCATION_STATE in ('IA', 'IL', 'IN', 'KS', 'KY', 'MI', 'MN', 'MO', 'ND', 'NE', 'OH', 'OK', 'SD', 'TN', 'WI') then "Midwest"
+when LOCATION_STATE in ('AK', 'AL', 'AR', 'LA', 'MS', 'NM', 'TX') then "Gulf Coast"
+when LOCATION_STATE in ('CO', 'ID', 'MT', 'UT', 'WY') then "Rocky Mountain"
+when LOCATION_STATE in ('AZ', 'CA', 'NV', 'OR', 'WA') then "West Coast"
+else 'Other' end LOCATION_REGION,                                          -- Change State to Region - State where incident occurred
+/* 
+INCIDENTS related to railroad crossing 
+*/
+i.GRADE_CROSSING,                                                          -- Indicates if incident happened at a railroad grade crossing
+i.CROSSING_DEVICE_TYPE,                                                    -- Type of warning device installed at the grade crossing
+/* Vehical involved in incident */
+i.TYPE_VEHICLE_INVOLVED,                                                   -- Type of vehicle involved in a grade crossing incident
+Case 
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "CHARTER BUS") then 'Bus'
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "SCHOOL BUS") then 'Bus'
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "TRANSIT BUS") then 'Bus'
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "PASSENGER CA") then "Passenger Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "PASSENGER TRUCK") then "Passenger Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "PASSENGER VAN") then "Passenger Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "COMMERCIAL TRUCK") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "CONSTRUCTION VEHICLE") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "DUMP TRUCK") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "FARM VEHICLE") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "FORK LIFT") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "TANKER TRUCK") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "TRACTOR TRAILE") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "TRACTOR TRAILER TRUC") then "Commercial Vehicle"
+when REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "ALL TERRAIN VEHICLE") then 'Other'
+when i.TYPE_VEHICLE_INVOLVED = 'OTHER' then 'Unknown'
+when i.TYPE_VEHICLE_INVOLVED = 'UNKNOWN' then 'Unknown'
+when i.TYPE_VEHICLE_INVOLVED = 'MOTORCYCLE' then 'Motorcycle'
+when i.TYPE_VEHICLE_INVOLVED = 'FARM VEHICLE' then 'Farm Vehicle'
+else TYPE_VEHICLE_INVOLVED end VEHICLE_CATEGORY,                            -- Type of vehicle involved in a grade crossing incident
+Case 
+when ic.TYPE_OF_INCIDENT = 'RAILROAD NON-RELEASE' then 'Yes'
+else null end as NON_RELEASE,
+TYPE_OF_INCIDENT ,                                                          -- Specific type of incident being reported
+/* 
+TRAINS_DETAILS: train type per incident.  ex, Multiple trains may involved in one incident 
+*/
+LOCOMOTIVE_IND,                                                             -- Type of Train involved is LOCOMOTIVE
+COMMUTER_IND,                                                               -- Type of Train involved is COMMUTER
+RAIL_CAR_IND,                                                               -- Type of Train involved is RAIL_CAR
+PASSENGER_IND,                                                              -- Type of Train involved is PASSENGER
+LIGHT_RAIL_IND,                                                             -- Type of Train involved is LIGHT RAIL
+SUBWAY_IND,                                                                 -- Type of Train involved is SUBWAY
+MILITARY_IND,                                                               -- Type of Train involved is MILITARY
+UNKNOWN_IND,                                                                -- Type of Train involved is UNKNOWN
+OTHER_IND,                                                                  -- Type of Train involved is OTHER
+/* data error - use fatality number to determine Yes  */
+DESCRIPTION_OF_INCIDENT                                                     -- Detailed explanation of the incident
+FROM 
+(select * from `nrc-2022.2022.INCIDENT_COMMONS`) as ic
+left join (select * from `nrc-2022.2022.INCIDENT_DETAILS`) as id  on ic.SEQNOS = id.SEQNOS 
+left join (select * from `nrc-2022.2022.INCIDENTS`) as i on ic.SEQNOS = i.SEQNOS 
+left join (select * from `nrc-2022.2022.V_TRAINS_DETAIL`) as vtd on ic.SEQNOS = vtd.SEQNOS 
+--  WHERE
+--  i.TYPE_VEHICLE_INVOLVED = "CHARTER BUS"
+--  ic.SEQNOS = 1167657
+--  and REGEXP_CONTAINS(i.TYPE_VEHICLE_INVOLVED, "CHARTER BUS")
+
