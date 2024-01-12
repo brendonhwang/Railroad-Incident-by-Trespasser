@@ -1,6 +1,8 @@
 ## Railroad Incidents Caused by Trespassers
 *Data is from The National Response Center from 2017 to 2021*
 
+![Screenshot 2024-01-11 184651](https://github.com/brendonhwang/railroad_incident/assets/155376651/8c384e62-d2af-4637-afd5-b9178d462428)
+
 
 
 #### Project Goal
